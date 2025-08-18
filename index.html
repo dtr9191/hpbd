@@ -11,7 +11,6 @@
       background-color: black;
     }
 
-    /* Canvas Matrix nền */
     #matrix {
       position: fixed;
       top: 0; left: 0;
@@ -20,7 +19,7 @@
       z-index: 0;
       pointer-events: none;
       background-color: black;
-      display: none; /* ban đầu ẩn, chỉ hiện sau khi click */
+      display: none;
     }
 
     .popup {
@@ -109,21 +108,67 @@
       50% { opacity: 0.6; }
     }
 
+    #birthdayGif {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.5);
+      z-index: 9998;
+      max-width: 80%;
+      max-height: 80%;
+      opacity: 0;
+      transition: opacity 1s ease, transform 1s ease;
+    }
+
+    #birthdayGif.show {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+    }
+
+    #birthdayGif.hide {
+      transform: translate(-50%, -50%) scale(0.5);
+      opacity: 0;
+    }
+
+    .countdown {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.5);
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      font-size: 72px;
+      font-weight: bold;
+      color: white;
+      text-shadow: 0 0 10px #ff66cc, 0 0 20px #ff99cc;
+      opacity: 0;
+      z-index: 1000;
+      display: none;
+      animation: countdownAnim 1s ease forwards;
+    }
+
+    @keyframes countdownAnim {
+      0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+      50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+    }
+
     @media screen and (max-width: 600px) {
       .popup { font-size: 14px; }
       .dialog { font-size: 18px; }
       .love-message { font-size: 32px; }
+      .countdown { font-size: 48px; }
+      #birthdayGif { max-width: 90%; max-height: 70%; }
     }
   </style>
 </head>
 <body>
   <canvas id="matrix"></canvas>
-
   <div id="startDialog" class="dialog">Click vào đây nhaaa! 🎂</div>
-
+  <div id="countdown" class="countdown"></div>
   <audio id="backgroundMusic" src="assets/music.mp3" loop></audio>
   <div id="loveMessage" class="love-message">Happy Birthday To You 🎂</div>
-
+  <img id="birthdayGif" src="assets/birthday.gif" alt="Birthday GIF">
   <script>
     // ==== MATRIX EFFECT ====
     const canvas = document.getElementById('matrix');
@@ -133,7 +178,7 @@
     let height = canvas.height = window.innerHeight;
 
     const matrixText = "HAPPY BIRTHDAY ";
-    const fontSize = 12;
+    const fontSize = 10;
     let columns = Math.floor(width / fontSize);
 
     const drops = [];
@@ -150,15 +195,19 @@
 
       for (let i = 0; i < columns; i++) {
         const letter = matrixText[i % matrixText.length];
+        const x = i * fontSize;
+        const y = drops[i] * fontSize;
+
+        const isEvenLine = Math.floor(drops[i]) % 2 === 0;
 
         ctx.lineWidth = 2;
-        ctx.strokeStyle = '#5C4033'; // viền nâu
-        ctx.strokeText(letter, i * fontSize, drops[i] * fontSize);
+        ctx.strokeStyle = isEvenLine ? '#5C4033' : '#FFFFFF';
+        ctx.strokeText(letter, x, y);
 
-        ctx.fillStyle = '#FFFFFF';   // chữ trắng
-        ctx.fillText(letter, i * fontSize, drops[i] * fontSize);
+        ctx.fillStyle = isEvenLine ? '#FFFFFF' : '#5C4033';
+        ctx.fillText(letter, x, y);
 
-        if (drops[i] * fontSize > height && Math.random() > 0.975) {
+        if (y > height && Math.random() > 0.975) {
           drops[i] = 0;
         }
         drops[i]++;
@@ -171,24 +220,29 @@
       matrixInterval = setInterval(drawMatrix, 50);
     }
 
+    function stopMatrix() {
+      clearInterval(matrixInterval);
+      canvas.style.display = 'none';
+    }
+
     function resizeCanvas() {
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
       columns = Math.floor(width / fontSize);
-    }
-
-    window.addEventListener('resize', () => {
-      resizeCanvas();
       drops.length = 0;
       for (let x = 0; x < columns; x++) {
         drops[x] = Math.random() * height / fontSize;
       }
-    });
+    }
 
-    // ==== Các hiệu ứng khác ====
+    window.addEventListener('resize', resizeCanvas);
+
+    // ==== HIỆU ỨNG KHÁC ====
     const dialog = document.getElementById("startDialog");
+    const countdown = document.getElementById("countdown");
     const audio = document.getElementById("backgroundMusic");
     const loveMessage = document.getElementById("loveMessage");
+    const gif = document.getElementById("birthdayGif");
 
     let heartsInterval;
     let popupsInterval;
@@ -212,13 +266,16 @@
 
       document.body.appendChild(popup);
 
-      setTimeout(() => {
-        popup.remove();
-      }, duration * 1000);
+      setTimeout(() => popup.remove(), duration * 1000);
     }
 
     function startPopups() {
       popupsInterval = setInterval(createPopup, 100);
+    }
+
+    function stopPopups() {
+      clearInterval(popupsInterval);
+      document.querySelectorAll('.popup').forEach(el => el.remove());
     }
 
     function enterFullscreen() {
@@ -250,37 +307,86 @@
       heartsInterval = setInterval(createFallingHeart, 300);
     }
 
-    function stopAllEffects() {
+    function stopFallingHearts() {
       clearInterval(heartsInterval);
-      clearInterval(popupsInterval);
-      clearInterval(matrixInterval);
-
       document.querySelectorAll('.heart').forEach(el => el.remove());
-      document.querySelectorAll('.popup').forEach(el => el.remove());
+    }
 
+    function stopAllEffects() {
+      stopMatrix();
+      stopPopups();
+      stopFallingHearts();
       showLoveMessage();
     }
 
-    function startExperience() {
+    function showLoveMessage() {
+      loveMessage.style.display = "block";
+    }
+
+    function showGif() {
+      gif.style.display = "block";
+      gif.classList.add("show");
+      gif.classList.remove("hide");
+    }
+
+    function hideGif() {
+      gif.classList.add("hide");
+      gif.classList.remove("show");
+      setTimeout(() => {
+        gif.style.display = "none";
+      }, 1000);
+    }
+
+    function startCountdown() {
       dialog.style.display = "none";
       audio.play().catch(error => {
         console.log("Lỗi phát nhạc:", error);
       });
 
+      countdown.style.display = "block";
+      let count = 3;
+      countdown.textContent = count;
+
+      const countdownInterval = setInterval(() => {
+        count--;
+        if (count >= 1) {
+          countdown.style.animation = "none"; // Reset animation
+          void countdown.offsetWidth; // Trigger reflow để restart animation
+          countdown.textContent = count;
+          countdown.style.animation = "countdownAnim 1s ease forwards";
+        } else {
+          clearInterval(countdownInterval);
+          countdown.style.display = "none";
+          startExperience();
+        }
+      }, 1000);
+    }
+
+    function startExperience() {
       enterFullscreen();
+      resizeCanvas();
       startMatrix();
       startPopups();
       startFallingHearts();
 
+      setTimeout(() => {
+        stopMatrix();
+        stopPopups();
+        stopFallingHearts();
+        showGif();
+      }, 10000);
+
+      setTimeout(() => {
+        hideGif();
+        startMatrix();
+        startPopups();
+        startFallingHearts();
+      }, 15000);
+
       setTimeout(stopAllEffects, 90000);
-      document.removeEventListener("click", startExperience);
     }
 
-    document.addEventListener("click", startExperience);
-
-    function showLoveMessage() {
-      loveMessage.style.display = "block";
-    }
+    document.getElementById("startDialog").addEventListener("click", startCountdown);
   </script>
 </body>
 </html>
