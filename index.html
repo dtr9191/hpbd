@@ -113,22 +113,25 @@
       position: fixed;
       top: 50%;
       left: 50%;
-      transform: translate(-50%, -50%) scale(0.5);
+      transform: translate(-50%, -50%) scale(0.5) rotate(0deg);
       z-index: 9998;
       max-width: 80%;
       max-height: 80%;
       opacity: 0;
-      transition: opacity 1s ease, transform 1s ease;
+      transition: opacity 1.5s ease-in-out, transform 1.5s ease-in-out, box-shadow 1.5s ease-in-out;
+      will-change: transform, opacity, box-shadow;
     }
 
     #birthdayGif.show {
-      transform: translate(-50%, -50%) scale(1);
+      transform: translate(-50%, -50%) scale(1) rotate(5deg);
       opacity: 1;
+      box-shadow: 0 0 20px #ff66cc, 0 0 40px #ff99cc;
     }
 
     #birthdayGif.hide {
-      transform: translate(-50%, -50%) scale(0.5);
+      transform: translate(-50%, -50%) scale(0.5) rotate(-5deg);
       opacity: 0;
+      box-shadow: none;
     }
 
     .countdown {
@@ -244,6 +247,11 @@
     const loveMessage = document.getElementById("loveMessage");
     const gif = document.getElementById("birthdayGif");
 
+    // Kiểm tra load GIF
+    gif.addEventListener('error', () => {
+      console.error("Lỗi load GIF: Kiểm tra đường dẫn assets/birthday.gif");
+    });
+
     let heartsInterval;
     let popupsInterval;
 
@@ -334,7 +342,7 @@
       gif.classList.remove("show");
       setTimeout(() => {
         gif.style.display = "none";
-      }, 1000);
+      }, 1500); // Đợi transition 1.5s hoàn tất
     }
 
     function startCountdown() {
@@ -350,14 +358,21 @@
       const countdownInterval = setInterval(() => {
         count--;
         if (count >= 1) {
-          countdown.style.animation = "none"; // Reset animation
-          void countdown.offsetWidth; // Trigger reflow để restart animation
+          countdown.style.animation = "none";
+          void countdown.offsetWidth; // Trigger reflow
           countdown.textContent = count;
           countdown.style.animation = "countdownAnim 1s ease forwards";
         } else {
           clearInterval(countdownInterval);
           countdown.style.display = "none";
-          startExperience();
+          showGif(); // Hiện GIF ngay sau đếm ngược
+          setTimeout(() => {
+            hideGif();
+            startMatrix();
+            startPopups();
+            startFallingHearts();
+          }, 5000); // Khôi phục hiệu ứng sau 5 giây từ khi GIF bắt đầu
+          setTimeout(stopAllEffects, 87000); // Điều chỉnh cho loveMessage ở giây 90
         }
       }, 1000);
     }
@@ -368,22 +383,6 @@
       startMatrix();
       startPopups();
       startFallingHearts();
-
-      setTimeout(() => {
-        stopMatrix();
-        stopPopups();
-        stopFallingHearts();
-        showGif();
-      }, 10000);
-
-      setTimeout(() => {
-        hideGif();
-        startMatrix();
-        startPopups();
-        startFallingHearts();
-      }, 15000);
-
-      setTimeout(stopAllEffects, 90000);
     }
 
     document.getElementById("startDialog").addEventListener("click", startCountdown);
