@@ -20,6 +20,7 @@
       pointer-events: none;
       background-color: transparent;
       display: none;
+      transition: opacity 0.5s ease;
     }
 
     .popup {
@@ -33,6 +34,7 @@
       animation: floatAround linear forwards;
       pointer-events: none;
       z-index: 10;
+      transition: opacity 0.5s ease;
     }
 
     .word {
@@ -263,7 +265,7 @@
     let width = matrixCanvas.width = window.innerWidth;
     let height = matrixCanvas.height = window.innerHeight;
 
-    const matrixText = "HAPPY BIRTHDAY TO YOU";
+    const matrixText = "HAPPY BIRTHDAY ";
     const fontSize = 20;
     let columns = Math.floor(width / fontSize);
     const drops = [];
@@ -306,13 +308,17 @@
 
     let matrixInterval;
     function startMatrix() {
+      matrixCanvas.style.opacity = '1';
       matrixCanvas.style.display = 'block';
       matrixInterval = setInterval(drawMatrix, 50);
     }
 
     function stopMatrix() {
-      clearInterval(matrixInterval);
-      matrixCanvas.style.display = 'none';
+      matrixCanvas.style.opacity = '0';
+      setTimeout(() => {
+        clearInterval(matrixInterval);
+        matrixCanvas.style.display = 'none';
+      }, 500); // Khớp với transition 0.5s
     }
 
     // ==== FIREWORKS EFFECT ====
@@ -432,8 +438,8 @@
     let balloonsInterval;
     let popupsInterval;
     const maxPopups = 20;
-    const maxHearts = 30;
-    const maxBalloons = 20;
+    const maxHearts = 40;
+    const maxBalloons = 30;
 
     function createPopup() {
       if (document.querySelectorAll('.popup').length >= maxPopups) return;
@@ -455,7 +461,10 @@
       popup.style.animationDuration = `${duration}s`;
 
       document.body.appendChild(popup);
-      setTimeout(() => popup.remove(), duration * 1000);
+      setTimeout(() => {
+        popup.style.opacity = '0';
+        setTimeout(() => popup.remove(), 500); // Khớp với transition 0.5s
+      }, duration * 1000);
     }
 
     function startPopups() {
@@ -464,7 +473,10 @@
 
     function stopPopups() {
       clearInterval(popupsInterval);
-      document.querySelectorAll('.popup').forEach(el => el.remove());
+      document.querySelectorAll('.popup').forEach(el => {
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 500); // Khớp với transition 0.5s
+      });
     }
 
     function createWord(word, delay) {
@@ -482,7 +494,7 @@
     }
 
     function showWords() {
-      const words = ["HAPPY", "BIRTHDAY", "QUỲNH MAI 20+ 🎂"];
+      const words = ["HAPPY", "BIRTHDAY", "QUỲNH MAI", "20+", "🎂🎂🎂🎂🎂"];
       let totalDelay = 0;
 
       words.forEach((word, index) => {
@@ -539,7 +551,7 @@
     }
 
     function startFallingHearts() {
-      heartsInterval = setInterval(createFallingHeart, 400);
+      heartsInterval = setInterval(createFallingHeart, 300);
     }
 
     function stopFallingHearts() {
@@ -548,7 +560,7 @@
     }
 
     function startBalloons() {
-      balloonsInterval = setInterval(createBalloon, 600);
+      balloonsInterval = setInterval(createBalloon, 400);
     }
 
     function stopBalloons() {
@@ -577,7 +589,7 @@
       gif.classList.remove("show");
       setTimeout(() => {
         gif.style.display = "none";
-      }, 2000); // Tăng thời gian để khớp transition 2s
+      }, 2000); // Khớp với transition 2s
     }
 
     function resetExperience() {
@@ -603,6 +615,7 @@
       });
 
       countdown.style.display = "block";
+      startMatrix(); // Bắt đầu Matrix ngay khi đếm ngược
       startFallingHearts();
       startBalloons();
       let count = 3;
@@ -618,14 +631,13 @@
         } else {
           clearInterval(countdownInterval);
           countdown.style.display = "none";
-          startMatrix();
           showWords();
           setTimeout(() => {
             showGif();
             setTimeout(() => {
               hideGif();
-              setTimeout(stopAllEffects, 2000); // Tăng thời gian để khớp transition 2s
-            }, 5000); // GIF hiển thị 5s
+              setTimeout(stopAllEffects, 2000); // Khớp với transition 2s
+            }, 6000); // GIF hiển thị 6s
           }, 25000); // GIF hiện sau 25 giây
         }
       }, 1000);
