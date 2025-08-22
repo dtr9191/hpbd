@@ -223,14 +223,14 @@
     }
 
     @media screen and (max-width: 600px) {
-      .popup { font-size: 16px; text-shadow: 0 0 6px hotpink, 0 0 12px pink; }
-      .word { font-size: 40px; text-shadow: 0 0 6px #ff3399, 0 0 12px #ff66cc, 0 0 24px #ff99cc; }
-      .dialog { font-size: 20px; padding: 15px; text-shadow: 0 0 6px #ff66cc, 0 0 12px #ff99cc; }
-      .love-message { font-size: 36px; }
-      .countdown { font-size: 56px; }
+      .popup { font-family: 'Verdana', Arial, sans-serif; font-size: 16px; text-shadow: 0 0 6px hotpink, 0 0 12px pink; }
+      .word { font-family: 'Verdana', Arial, sans-serif; font-size: 40px; text-shadow: 0 0 6px #ff3399, 0 0 12px #ff66cc, 0 0 24px #ff99cc; }
+      .dialog { font-family: 'Verdana', Arial, sans-serif; font-size: 20px; padding: 15px; text-shadow: 0 0 6px #ff66cc, 0 0 12px #ff99cc; }
+      .love-message { font-family: 'Verdana', Arial, sans-serif; font-size: 36px; }
+      .countdown { font-family: 'Verdana', Arial, sans-serif; font-size: 56px; }
       .heart, .balloon { font-size: 18px; }
       #birthdayGif { max-width: 90%; max-height: 70%; }
-      #replayButton { font-size: 16px; padding: 8px 16px; }
+      #replayButton { font-family: 'Verdana', Arial, sans-serif; font-size: 16px; padding: 8px 16px; }
     }
   </style>
 </head>
@@ -252,7 +252,7 @@
     let height = matrixCanvas.height = window.innerHeight;
 
     const matrixText = "HAPPY BIRTHDAY ";
-    const fontSize = 20;
+    const fontSize = 8;
     let columns = Math.floor(width / fontSize);
     const drops = [];
 
