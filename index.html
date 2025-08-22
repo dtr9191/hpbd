@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Happy Birthday To You 🎂</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: black;
+    }
+
+    #matrix, #fireworksCanvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+      background-color: transparent;
+      display: none;
+    }
+
+    .popup {
+      position: absolute;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      font-weight: bold;
+      font-size: 18px;
+      color: white;
+      text-shadow: 0 0 5px hotpink, 0 0 10px pink;
+      white-space: nowrap;
+      animation: floatAround linear forwards;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .word {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      font-weight: bold;
+      font-size: 48px;
+      color: white;
+      text-shadow: 0 0 5px #ff3399, 0 0 10px #ff66cc, 0 0 20px #ff99cc;
+      white-space: nowrap;
+      animation: floatCenter 1s ease forwards, neonGlow 0.5s infinite alternate;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    @keyframes floatAround {
+      0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+      25% { transform: translate(-50px, 80px) rotate(10deg); }
+      50% { transform: translate(100px, 150px) rotate(-10deg); opacity: 0.9; }
+      75% { transform: translate(-120px, 200px) rotate(5deg); }
+      100% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+    }
+
+    @keyframes floatCenter {
+      0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+      50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    }
+
+    @keyframes neonGlow {
+      0% { text-shadow: 0 0 5px #ff3399, 0 0 10px #ff66cc, 0 0 20px #ff99cc; }
+      100% { text-shadow: 0 0 10px #ff3399, 0 0 20px #ff66cc, 0 0 30px #ff99cc; }
+    }
+
+    .dialog {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: black;
+      padding: 20px;
+      border-radius: 10px;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      font-size: 24px;
+      color: white;
+      text-align: center;
+      box-shadow: 0 0 15px pink;
+      z-index: 1000;
+      cursor: pointer;
+    }
+
+    .heart {
+      position: fixed;
+      top: -50px;
+      color: pink;
+      font-size: 24px;
+      animation: fall linear infinite;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .balloon {
+      position: fixed;
+      bottom: -50px;
+      color: pink;
+      font-size: 24px;
+      animation: rise linear infinite;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    @keyframes rise {
+      to {
+        transform: translateY(-100vh) rotate(-360deg);
+        opacity: 0;
+      }
+    }
+
+    .love-message {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.5);
+      font-size: 48px;
+      font-weight: bold;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      color: white;
+      text-shadow:
+        0 0 5px #ff66cc,
+        0 0 10px #ff99cc,
+        0 0 20px #ff66cc,
+        0 0 40px #ff3399;
+      opacity: 0;
+      animation: zoomIn 3s ease forwards, blink 1.2s infinite;
+      z-index: 9999;
+      white-space: nowrap;
+      display: none;
+      transition: opacity 2s ease, transform 2s ease;
+    }
+
+    @keyframes zoomIn {
+      0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+      100% { transform: translate(-50%, -50%) scale(1.5); opacity: 1; }
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    #birthdayGif {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.5) rotate(0deg);
+      z-index: 9998;
+      max-width: 80%;
+      max-height: 80%;
+      opacity: 0;
+      transition: opacity 1.5s ease-in-out, transform 1.5s ease-in-out;
+      will-change: transform, opacity;
+    }
+
+    #birthdayGif.show {
+      transform: translate(-50%, -50%) scale(1) rotate(5deg);
+      opacity: 1;
+    }
+
+    #birthdayGif.hide {
+      transform: translate(-50%, -50%) scale(0.5) rotate(-5deg);
+      opacity: 0;
+    }
+
+    .countdown {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.5);
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      font-size: 72px;
+      font-weight: bold;
+      color: white;
+      text-shadow: 0 0 10px #ff66cc, 0 0 20px #ff99cc;
+      opacity: 0;
+      z-index: 1000;
+      display: none;
+      animation: countdownAnim 1s ease forwards;
+    }
+
+    @keyframes countdownAnim {
+      0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+      50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+    }
+
+    #replayButton {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #ff66cc;
+      color: white;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      font-size: 18px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      z-index: 1000;
+      display: none;
+    }
+
+    #replayButton:hover {
+      background-color: #ff3399;
+    }
+
+    @media screen and (max-width: 600px) {
+      .popup { font-size: 14px; }
+      .word { font-size: 32px; }
+      .dialog { font-size: 18px; padding: 15px; }
+      .love-message { font-size: 32px; }
+      .countdown { font-size: 48px; }
+      .heart, .balloon { font-size: 18px; }
+      #birthdayGif { max-width: 90%; max-height: 70%; }
+      #replayButton { font-size: 16px; padding: 8px 16px; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="matrix"></canvas>
+  <canvas id="fireworksCanvas"></canvas>
+  <div id="startDialog" class="dialog">Click vào đây nhaaa! 🎂</div>
+  <div id="countdown" class="countdown"></div>
+  <audio id="backgroundMusic" src="assets/music.mp3" loop></audio>
+  <div id="loveMessage" class="love-message">HAPPY BIRTHDAY QUỲNH MAI 🎂</div>
+  <img id="birthdayGif" src="assets/birthday.gif" alt="Birthday GIF">
+  <button id="replayButton">Replay</button>
+  <script>
+    // ==== MATRIX EFFECT ====
+    const matrixCanvas = document.getElementById('matrix');
+    const matrixCtx = matrixCanvas.getContext('2d');
+
+    let width = matrixCanvas.width = window.innerWidth;
+    let height = matrixCanvas.height = window.innerHeight;
+
+    const matrixText = "HAPPY BIRTHDAY ";
+    const fontSize = 24;
+    let columns = Math.floor(width / fontSize);
+    const drops = [];
+
+    function initDrops() {
+      drops.length = 0;
+      for (let x = 0; x < columns; x++) {
+        drops[x] = Math.random() * height / fontSize;
+      }
+    }
+    initDrops();
+
+    function drawMatrix() {
+      matrixCtx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+      matrixCtx.fillRect(0, 0, width, height);
+
+      matrixCtx.font = fontSize + 'px monospace';
+      matrixCtx.textBaseline = 'top';
+
+      for (let i = 0; i < columns; i++) {
+        const letter = matrixText[i % matrixText.length];
+        const x = i * fontSize;
+        const y = drops[i] * fontSize;
+
+        const isEvenLine = Math.floor(drops[i]) % 2 === 0;
+
+        matrixCtx.lineWidth = 2;
+        matrixCtx.strokeStyle = isEvenLine ? '#ff3399' : '#ff66cc'; // Hồng đậm và nhạt
+        matrixCtx.strokeText(letter, x, y);
+
+        matrixCtx.fillStyle = isEvenLine ? '#ff66cc' : '#ff3399';
+        matrixCtx.fillText(letter, x, y);
+
+        if (y > height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    }
+
+    let matrixInterval;
+    function startMatrix() {
+      matrixCanvas.style.display = 'block';
+      matrixInterval = setInterval(drawMatrix, 50);
+    }
+
+    function stopMatrix() {
+      clearInterval(matrixInterval);
+      matrixCanvas.style.display = 'none';
+    }
+
+    // ==== FIREWORKS EFFECT ====
+    const fireworksCanvas = document.getElementById('fireworksCanvas');
+    const fireworksCtx = fireworksCanvas.getContext('2d');
+
+    let fireworks = [];
+    let particles = [];
+
+    function createFirework() {
+      const x = Math.random() * width;
+      const y = Math.random() * height;
+      const color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+
+      fireworks.push({ x, y, color, radius: 2, speed: Math.random() * 3 + 2 });
+
+      setTimeout(() => {
+        const firework = fireworks.shift();
+        for (let i = 0; i < 80; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = Math.random() * 7 + 3;
+          particles.push({
+            x: firework.x,
+            y: firework.y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            color: firework.color,
+            life: 80,
+            radius: Math.random() * 2 + 1
+          });
+        }
+      }, 1000);
+    }
+
+    function drawFireworks() {
+      fireworksCtx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+      fireworksCtx.fillRect(0, 0, width, height);
+
+      fireworks.forEach(f => {
+        fireworksCtx.beginPath();
+        fireworksCtx.arc(f.x, f.y, f.radius, 0, Math.PI * 2);
+        fireworksCtx.fillStyle = f.color;
+        fireworksCtx.fill();
+      });
+
+      particles.forEach((p, index) => {
+        if (particles.length > 1000) {
+          particles.splice(0, particles.length - 1000);
+          return;
+        }
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.02;
+        p.life -= 2;
+        p.radius *= 0.98;
+
+        if (p.life <= 0 || p.radius < 0.1) {
+          particles.splice(index, 1);
+          return;
+        }
+
+        fireworksCtx.beginPath();
+        fireworksCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        fireworksCtx.fillStyle = p.color;
+        fireworksCtx.globalAlpha = p.life / 80;
+        fireworksCtx.fill();
+        fireworksCtx.globalAlpha = 1;
+      });
+    }
+
+    let fireworksInterval;
+    function startFireworks() {
+      fireworksCanvas.style.display = 'block';
+      fireworksCanvas.width = window.innerWidth;
+      fireworksCanvas.height = window.innerHeight;
+      fireworksInterval = setInterval(() => {
+        createFirework();
+        drawFireworks();
+      }, 300);
+    }
+
+    function stopFireworks() {
+      clearInterval(fireworksInterval);
+      fireworksCanvas.style.display = 'none';
+      fireworks = [];
+      particles = [];
+    }
+
+    function resizeCanvas() {
+      width = matrixCanvas.width = fireworksCanvas.width = window.innerWidth;
+      height = matrixCanvas.height = fireworksCanvas.height = window.innerHeight;
+      columns = Math.floor(width / fontSize);
+      initDrops();
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+
+    // ==== HIỆU ỨNG KHÁC ====
+    const dialog = document.getElementById("startDialog");
+    const countdown = document.getElementById("countdown");
+    const audio = document.getElementById("backgroundMusic");
+    const loveMessage = document.getElementById("loveMessage");
+    const gif = document.getElementById("birthdayGif");
+    const replayButton = document.getElementById("replayButton");
+
+    // Fallback cho GIF và nhạc
+    gif.addEventListener('error', () => {
+      console.error("Lỗi load GIF: Kiểm tra đường dẫn assets/birthday.gif");
+      gif.src = "https://via.placeholder.com/300x300?text=Happy+Birthday";
+    });
+
+    audio.addEventListener('error', () => {
+      console.error("Lỗi load nhạc: Kiểm tra đường dẫn assets/music.mp3");
+    });
+
+    let heartsInterval;
+    let balloonsInterval;
+    let popupsInterval;
+    const maxPopups = 20;
+    const maxHearts = 30;
+    const maxBalloons = 20;
+
+    function createPopup() {
+      if (document.querySelectorAll('.popup').length >= maxPopups) return;
+
+      const popup = document.createElement("div");
+      popup.className = "popup";
+      popup.textContent = "HAPPY BIRTHDAY QUỲNH MAI 🎂";
+
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight;
+
+      const x = Math.random() * (screenWidth - 150);
+      const y = Math.random() * (screenHeight - 50);
+
+      popup.style.left = `${x}px`;
+      popup.style.top = `${y}px`;
+
+      const duration = 5 + Math.random() * 5;
+      popup.style.animationDuration = `${duration}s`;
+
+      document.body.appendChild(popup);
+      setTimeout(() => popup.remove(), duration * 1000);
+    }
+
+    function startPopups() {
+      popupsInterval = setInterval(createPopup, 200);
+    }
+
+    function stopPopups() {
+      clearInterval(popupsInterval);
+      document.querySelectorAll('.popup').forEach(el => el.remove());
+    }
+
+    function createWord(word, delay) {
+      const wordEl = document.createElement("div");
+      wordEl.className = "word";
+      wordEl.textContent = word;
+
+      const duration = 1; // Hiện 1s
+      wordEl.style.animationDuration = `${duration}s`;
+
+      setTimeout(() => {
+        document.body.appendChild(wordEl);
+        setTimeout(() => wordEl.remove(), duration * 1000 + 500); // Ẩn sau 1s + 0.5s
+      }, delay);
+    }
+
+    function showWords() {
+      const words = ["HAPPY", "BIRTHDAY", "QUỲNH MAI 20+"];
+      let totalDelay = 0;
+
+      words.forEach((word, index) => {
+        createWord(word, totalDelay);
+        totalDelay += 1500; // 1s hiện + 0.5s ẩn
+      });
+
+      // Sau khi tất cả từ hiện xong (4.5s), chạy pop-up
+      setTimeout(startPopups, totalDelay);
+    }
+
+    function enterFullscreen() {
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen().catch(err => console.log("Fullscreen lỗi:", err));
+      } else if (elem.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen().catch(err => console.log("Fullscreen lỗi:", err));
+      }
+    }
+
+    function createFallingHeart() {
+      if (document.querySelectorAll('.heart').length >= maxHearts) return;
+
+      const heart = document.createElement("div");
+      heart.className = "heart";
+
+      const emojis = ["🎉", "🥳"];
+      const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+      heart.textContent = randomEmoji;
+
+      heart.style.left = `${Math.random() * 100}vw`;
+      heart.style.fontSize = `${Math.random() * 20 + 10}px`;
+      heart.style.animationDuration = `${Math.random() * 3 + 3}s`;
+
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 5000);
+    }
+
+    function createBalloon() {
+      if (document.querySelectorAll('.balloon').length >= maxBalloons) return;
+
+      const balloon = document.createElement("div");
+      balloon.className = "balloon";
+
+      const emojis = ["🎈"];
+      balloon.textContent = emojis[0];
+
+      balloon.style.left = `${Math.random() * 100}vw`;
+      balloon.style.fontSize = `${Math.random() * 20 + 10}px`;
+      balloon.style.animationDuration = `${Math.random() * 4 + 4}s`;
+
+      document.body.appendChild(balloon);
+      setTimeout(() => balloon.remove(), 5000);
+    }
+
+    function startFallingHearts() {
+      heartsInterval = setInterval(createFallingHeart, 400);
+    }
+
+    function stopFallingHearts() {
+      clearInterval(heartsInterval);
+      document.querySelectorAll('.heart').forEach(el => el.remove());
+    }
+
+    function startBalloons() {
+      balloonsInterval = setInterval(createBalloon, 600);
+    }
+
+    function stopBalloons() {
+      clearInterval(balloonsInterval);
+      document.querySelectorAll('.balloon').forEach(el => el.remove());
+    }
+
+    function showLoveMessage() {
+      loveMessage.style.display = "block";
+      replayButton.style.display = "block";
+    }
+
+    function showGif() {
+      stopMatrix();
+      stopPopups();
+      gif.style.display = "block";
+      gif.classList.add("show");
+      gif.classList.remove("hide");
+      startFallingHearts();
+      startBalloons();
+      startFireworks();
+    }
+
+    function hideGif() {
+      gif.classList.add("hide");
+      gif.classList.remove("show");
+      setTimeout(() => {
+        gif.style.display = "none";
+      }, 1500);
+    }
+
+    function resetExperience() {
+      stopMatrix();
+      stopPopups();
+      stopFallingHearts();
+      stopBalloons();
+      stopFireworks();
+      document.querySelectorAll('.word').forEach(el => el.remove());
+      loveMessage.style.display = "none";
+      replayButton.style.display = "none";
+      gif.style.display = "none";
+      gif.classList.remove("show", "hide");
+      dialog.style.display = "block";
+      audio.pause();
+      audio.currentTime = 0;
+    }
+
+    function startCountdown() {
+      dialog.style.display = "none";
+      audio.play().catch(error => {
+        console.log("Lỗi phát nhạc:", error);
+      });
+
+      countdown.style.display = "block";
+      startFallingHearts();
+      startBalloons();
+      let count = 3;
+      countdown.textContent = count;
+
+      const countdownInterval = setInterval(() => {
+        count--;
+        if (count >= 1) {
+          countdown.style.animation = "none";
+          void countdown.offsetWidth; // Trigger reflow
+          countdown.textContent = count;
+          countdown.style.animation = "countdownAnim 1s ease forwards";
+        } else {
+          clearInterval(countdownInterval);
+          countdown.style.display = "none";
+          startMatrix();
+          showWords();
+          setTimeout(() => {
+            showGif();
+            setTimeout(() => {
+              hideGif();
+              setTimeout(stopAllEffects, 1500); // Kết thúc sau khi GIF ẩn (giây 30)
+            }, 5000); // GIF hiển thị 5s
+          }, 25000); // GIF hiện sau 25 giây
+        }
+      }, 1000);
+    }
+
+    function stopAllEffects() {
+      stopMatrix();
+      stopPopups();
+      stopFallingHearts();
+      stopBalloons();
+      stopFireworks();
+      document.querySelectorAll('.word').forEach(el => el.remove());
+      showLoveMessage();
+    }
+
+    dialog.addEventListener("click", startCountdown);
+    replayButton.addEventListener("click", resetExperience);
+  </script>
+</body>
+</html>
